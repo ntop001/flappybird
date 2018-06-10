@@ -1,0 +1,25 @@
+{
+  "frames": [
+    {"filename":"background.png", "frame":{"x":546,"y":1, "w": 720, "h": 1280}, "rotated":true},
+    {"filename":"bird1.png", "frame": {"x":289, "y": 950, "w": 86, "h": 60 }, "rotated":false},
+    {"filename":"bird2.png", "frame": {"x":377, "y": 950, "w": 86, "h": 60 }, "rotated":false},
+    {"filename":"bird3.png", "frame": {"x":465, "y": 950, "w": 86, "h": 60 }, "rotated":false},
+    {"filename":"bottom_pipe.png", "frame": {"x": 284, "y": 1, "w": 129, "h":801},"rotated":false},
+    {"filename":"game_name.png", "frame":{"x":1828, "y": 1, "w": 466, "h": 140},"rotated":true},
+    {"filename":"gameover.png", "frame":{"x":1828, "y": 469, "w": 500, "h": 136},"rotated":true},
+    {"filename":"getready.png", "frame":{"x": 289, "y": 804, "w": 508, "h": 144},"rotated":false},
+    {"filename":"ground.png", "frame":{"x":1,"y":1, "w": 840, "h": 281},"rotated":true},
+    {"filename":"medal_gold.png", "frame":{"x": 1639, "y": 838, "w": 113, "h": 111},"rotated":true},
+    {"filename":"medal_silver.png", "frame":{"x": 639, "y":723, "w": 123, "h": 113},"rotated":false},
+    {"filename":"result_board.png", "frame":{"x": 799, "y":723, "w": 590, "h": 298},"rotated":false},
+    {"filename":"start.png", "frame":{"x":1, "y": 843, "w": 286, "h": 166 },"rotated":false},
+    {"filename":"tap.png", "frame":{"x": 1391, "y": 723, "w": 286, "h": 246},"rotated":true},
+    {"filename":"top_pipe.png", "frame":{"x": 415, "y": 1, "w": 129, "h": 801}, "rotated":false}
+    ],
+
+    "meta":{
+      "format":"RGBA8888",
+      "image":"res_bundle.png",
+      "size":{"w":1969,"h":1022}
+    }
+}
