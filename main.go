@@ -8,6 +8,8 @@ import (
 	"korok.io/korok/gfx"
 	"korok.io/korok/gui"
 	"korok.io/korok/engi"
+	"korok.io/korok/anim"
+	"korok.io/korok/math/ease"
 )
 
 type StartScene struct {
@@ -21,13 +23,18 @@ type StartScene struct {
 		gui.Rect
 	}
 	bird, bg, ground engi.Entity
+	mask gfx.Color
 }
 
 func (sn *StartScene) Load() {
 	asset.Texture.LoadAtlas("images/bird.png", "images/bird.json")
+	asset.Font.LoadTrueType("font1", "fonts/Marker Felt.ttf")
 }
 
 func (sn *StartScene) OnEnter(g *game.Game) {
+	font, _ := asset.Font.Get("font1")
+	gui.SetFont(font)
+
 	at, _ := asset.Texture.Atlas("images/bird.png")
 	bg, _ := at.GetByName("background.png")
 	ground, _ := at.GetByName("ground.png")
@@ -105,10 +112,21 @@ func (sn *StartScene) Update(dt float32) {
 	// draw start button
 	e := gui.ImageButton(2, sn.start.Rect, sn.start.btnNormal, sn.start.btnPressed, nil)
 	if e.JustPressed() {
-		sn.LoadGame()
+		// sn.LoadGame()
+		sn.fadeOut()
+	}
+	// fade color
+	if sn.mask.A > 0 {
+		gui.ColorRect(gui.Rect{W:320,H:480}, sn.mask,0)
 	}
 }
 func (sn *StartScene) OnExit() {
+}
+
+func (sn *StartScene) fadeOut() {
+	anim.OfColor(&sn.mask, gfx.Transparent, gfx.White).SetFunction(ease.InOutSine).SetDuration(1).OnComplete(func(reverse bool) {
+		sn.LoadGame()
+	}).Forward()
 }
 
 func (sn *StartScene) LoadGame() {

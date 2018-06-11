@@ -9,6 +9,8 @@ import (
 	"korok.io/korok"
 	"korok.io/korok/math/f32"
 	"korok.io/korok/hid/input"
+	"korok.io/korok/anim/ween"
+	"korok.io/korok/math/ease"
 )
 
 
@@ -50,6 +52,18 @@ type GameScene struct {
 		gfx.Tex2D
 		gui.Rect
 	}
+	gameover struct{
+		gfx.Tex2D
+		gui.Rect
+	}
+	score struct{
+		gfx.Tex2D
+		gui.Rect
+	}
+	restart struct{
+		gfx.Tex2D
+		gui.Rect
+	}
 
 	bg engi.Entity
 
@@ -69,6 +83,8 @@ type GameScene struct {
 	}
 
 	PipeSystem
+	alphaTween ween.ColorTween
+	bounceTween ween.F32Tween
 }
 
 func (sn *GameScene) borrow(bird, bg, ground engi.Entity) {
@@ -94,6 +110,29 @@ func (sn *GameScene) OnEnter(g *game.Game) {
 		H: 123, // 246
 	}
 
+	sn.gameover.Tex2D, _ = at.GetByName("gameover.png")
+	sn.gameover.Rect = gui.Rect{
+		X: (320-233)/2,
+		Y: 70,
+		W: 233,
+		H: 70,
+	}
+	sn.score.Tex2D, _ = at.GetByName("result_board.png")
+	sn.score.Rect = gui.Rect{
+		X: (320 - 240)/2,
+		Y: 200,
+		W: 240,
+		H: 120,
+	}
+	sn.restart.Tex2D, _ = at.GetByName("start.png")
+	sn.restart.Rect = gui.Rect{
+		X: (320 - 120)/2,
+		Y: 360,
+		W: 120,
+		H: 60,
+	}
+
+
 	korok.Transform.Comp(sn.bird.Entity).SetPosition(f32.Vec2{80, 240})
 	sn.bird.Vec2 = f32.Vec2{80, 240}
 
@@ -112,9 +151,20 @@ func (sn *GameScene) OnEnter(g *game.Game) {
 	ps.setLimit(300, 150)
 	ps.StartScroll()
 
+	sn.alphaTween.Range(gfx.White, gfx.Transparent).Animate(g.TweenEngine.NewAnimator())
+	sn.alphaTween.Animator().SetFunction(ease.InOutSine).SetDuration(.5).Forward()
+
+	sn.bounceTween.Range(240, 0).Animate(g.TweenEngine.NewAnimator())
+	sn.bounceTween.Animator().SetFunction(ease.OutBounce).SetDuration(1)
 }
 
 func (sn *GameScene) Update(dt float32) {
+	if sn.alphaTween.Value().A > 0 {
+		z := gui.SetZOrder(gui.DefaultZOrder+1)
+		gui.ColorRect(gui.Rect{0,0, 320, 480}, sn.alphaTween.Value(), 0)
+		gui.SetZOrder(z)
+	}
+
 	if st := sn.state; st == Ready {
 		sn.showReady(dt); return
 	} else if st == Over {
@@ -179,6 +229,8 @@ func (sn *GameScene) Update(dt float32) {
 			sn.bird.state = Dead
 			korok.Flipbook.Comp(sn.bird.Entity).Stop()
 		}
+
+		sn.bounceTween.Animator().Forward() // 如何
 	}
 }
 
@@ -196,7 +248,43 @@ func (sn *GameScene) showReady(dt float32) {
 }
 
 func (sn *GameScene) showOver(dt float32) {
+	//
+	sn.score.Rect.Y = sn.bounceTween.Value() + 160
+	sn.restart.Rect.Y = sn.bounceTween.Value() + 320
 
+
+	// show game over
+	gui.Image(1, sn.gameover.Rect, sn.gameover.Tex2D, nil)
+
+	// show score
+	gui.Image(2, sn.score.Rect, sn.score.Tex2D, nil)
+
+	// show restart button
+	e := gui.ImageButton(3, sn.restart.Rect, sn.restart.Tex2D, sn.restart.Tex2D, nil)
+	if e.JustPressed() {
+		sn.alphaTween.Range(gfx.Transparent, gfx.White)
+		sn.alphaTween.Animator().SetFunction(ease.InOutSine).SetDuration(.5).OnComplete(func (r bool) {
+			sn.reStart()
+		}).Forward()
+	}
+}
+
+func (sn *GameScene) reStart() {
+	sn.state = Ready
+
+	// bird
+	sn.bird.state = Flying
+	sn.bird.Vec2 = f32.Vec2{80, 240}
+	sn.bird.vy = 0
+	sn.bird.rotate = 0
+	korok.Transform.Comp(sn.bird.Entity).SetRotation(0)
+	korok.Flipbook.Comp(sn.bird.Entity).Play("flying")
+	// pipes
+	sn.PipeSystem.Reset()
+	sn.PipeSystem.StartScroll()
+
+	// reverse
+	sn.alphaTween.Animator().OnComplete(nil).Reverse()
 }
 
 
