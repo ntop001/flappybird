@@ -11,6 +11,7 @@ import (
 	"korok.io/korok/hid/input"
 	"korok.io/korok/anim/ween"
 	"korok.io/korok/math/ease"
+	"korok.io/korok/audio"
 )
 
 
@@ -82,6 +83,14 @@ type GameScene struct {
 		vx float32
 	}
 
+	sound struct{
+		rise uint16
+		drop uint16
+		collision uint16
+		point uint16
+		swooshing uint16
+	}
+
 	PipeSystem
 	alphaTween ween.ColorTween
 	bounceTween ween.F32Tween
@@ -89,6 +98,14 @@ type GameScene struct {
 
 func (sn *GameScene) borrow(bird, bg, ground engi.Entity) {
 	sn.bird.Entity, sn.bg, sn.ground.Entity = bird, bg, ground
+}
+
+func (sn *GameScene) Load() {
+	asset.Audio.Load("sound/rise.ogg", false)
+	asset.Audio.Load("sound/drop.ogg", false)
+	asset.Audio.Load("sound/point.ogg", false)
+	asset.Audio.Load("sound/collision.ogg", false)
+	asset.Audio.Load("sound/swooshing.ogg", false)
 }
 
 func (sn *GameScene) OnEnter(g *game.Game) {
@@ -132,6 +149,14 @@ func (sn *GameScene) OnEnter(g *game.Game) {
 		H: 60,
 	}
 
+	// sound
+	sn.sound.rise, _ = asset.Audio.Get("sound/rise.ogg")
+	sn.sound.drop, _ = asset.Audio.Get("sound/drop.ogg")
+	sn.sound.point, _ = asset.Audio.Get("sound/point.ogg")
+	sn.sound.collision, _ = asset.Audio.Get("sound/collision.ogg")
+	sn.sound.swooshing, _ = asset.Audio.Get("sound/swooshing.ogg")
+
+
 
 	korok.Transform.Comp(sn.bird.Entity).SetPosition(f32.Vec2{80, 240})
 	sn.bird.Vec2 = f32.Vec2{80, 240}
@@ -174,6 +199,8 @@ func (sn *GameScene) Update(dt float32) {
 
 	if input.PointerButton(0).JustPressed() {
 		sn.bird.vy = TapImpulse
+		// play effect
+		audio.PlayEffect(sn.sound.rise, 1)
 	}
 	sn.bird.vy -= Gravity * dt
 	sn.bird.Vec2[1] += sn.bird.vy * dt
@@ -214,6 +241,7 @@ func (sn *GameScene) Update(dt float32) {
 			sn.bird.state = Dead
 
 			// stop bird animation
+			audio.PlayEffect(sn.sound.collision, 1)
 			korok.Flipbook.Comp(sn.bird.Entity).Stop()
 		}
 	}
@@ -227,9 +255,11 @@ func (sn *GameScene) Update(dt float32) {
 
 		if sn.bird.state != Dead {
 			sn.bird.state = Dead
+			audio.PlayEffect(sn.sound.collision, 1)
 			korok.Flipbook.Comp(sn.bird.Entity).Stop()
 		}
 
+		audio.PlayEffect(sn.sound.drop, 2)
 		sn.bounceTween.Animator().Forward() // 如何
 	}
 }
