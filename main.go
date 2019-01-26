@@ -10,6 +10,7 @@ import (
 	"korok.io/korok/engi"
 	"korok.io/korok/anim"
 	"korok.io/korok/math/ease"
+	"korok.io/korok/gfx/font"
 )
 
 type StartScene struct {
@@ -28,7 +29,7 @@ type StartScene struct {
 
 func (sn *StartScene) Load() {
 	asset.Texture.LoadAtlas("images/bird.png", "images/bird.json")
-	asset.Font.LoadTrueType("font1", "fonts/Marker Felt.ttf")
+	asset.Font.LoadTrueType("font1", "fonts/Marker Felt.ttf", font.ASCII(32))
 }
 
 func (sn *StartScene) OnEnter(g *game.Game) {
